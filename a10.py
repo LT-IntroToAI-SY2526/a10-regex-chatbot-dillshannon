@@ -137,21 +137,29 @@ def get_death_date(name: str) -> str:
 
 def get_population(name: str) -> str:
     infobox_text = clean_text(get_first_infobox_text(get_page_html(name)))
-
-    pattern = r"Population.*?City\s*(?P<pop>[\d,]+)"
+    pattern = r"Population[\s\S]{0,200}?(?P<pop>\d{1,3}(?:,\d{3})+)"
     error_text = "Page infobox has no population information"
-
     match = get_match(infobox_text, pattern, error_text)
     return match.group("pop")
 
+
 def get_area(name: str) -> str:
     infobox_text = clean_text(get_first_infobox_text(get_page_html(name)))
-
-    pattern = r"Area.*?City\s*(?P<area>[\d,\.]+)"
+    pattern = r"Area.*?(?P<area>[\d,\.]+)"
     error_text = "Page infobox has no area information"
-
+    print(infobox_text)
     match = get_match(infobox_text, pattern, error_text)
     return match.group("area")
+
+def get_capital(country: str) -> str:
+    infobox_text = clean_text(get_first_infobox_text(get_page_html(country)))
+    pattern = r"Capital\s*(?P<cap>[A-Za-z.,\s]+?)(?=\d|\(|\n)"
+    error_text = "Page infobox has no capital information"
+    match = get_match(infobox_text, pattern, error_text)
+    capital = match.group("cap").strip()
+    return capital
+
+
 
 
 def polar_radius(matches: List[str]) -> List[str]:
@@ -176,6 +184,9 @@ def population(matches: List[str]) -> List[str]:
 
 def area(matches: List[str]) -> List[str]:
     return [get_area(" ".join(matches))]
+
+def capital_city(matches: List[str]) -> List[str]:
+    return [get_capital(" ".join(matches))]
 
 
 # dummy argument is ignored and doesn't matter
@@ -202,6 +213,10 @@ pa_list: List[Tuple[Pattern, Action]] = [
     # area
     ("what is the area of %".split(), area),
     ("area of %".split(), area),
+    
+    # capital city
+    ("what is the capital of %".split(), capital_city),
+    ("capital of %".split(), capital_city),
 
     (["bye"], bye_action),
 ]
